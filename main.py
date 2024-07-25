@@ -20,10 +20,11 @@ def main(args):
     # faces = []
     # for facePath in os.listdir(facesDir):
     #     faces.append(cv2.imread(facePath))
-
-    for photoName in os.listdir(photosDir):
+    photos = os.listdir(photosDir)
+    i = 0
+    totalPhotos = len(photos)
+    for photoName in photos:
         path = os.path.join(photosDir,photoName)
-        print(path)
         photo = cv2.imread(path)
         detectedFaces = detectFaces(photo)
         if(len(detectedFaces)>0):
@@ -31,5 +32,7 @@ def main(args):
         else:
             pass
             # leave non-face photos there.
+        i+=1
+        print(f'{i}/{totalPhotos} done')
 if(__name__=='__main__'):
     main(sys.argv)

@@ -20,16 +20,20 @@ def getKnownFaceIndex(knownFaceEncodings,img):
     imgRGB = img[:,:,::-1]
     imgRGB = cv2.blur(imgRGB,(5,5))
     faceLocs = face_recognition.face_locations(imgRGB)
-    cv2.imshow('wer',imgRGB)
-    cv2.waitKey(0)
+    # cv2.imshow('wer',imgRGB)
+    # cv2.waitKey(0)
     faceEncodings = face_recognition.face_encodings(imgRGB,faceLocs)
     for encoding in faceEncodings:
         matches = face_recognition.compare_faces(knownFaceEncodings,encoding)
         faceDistances = face_recognition.face_distance(knownFaceEncodings, encoding)
         bestMatchIndex = np.argmin(faceDistances)
+        minDistance = faceDistances[bestMatchIndex]
+        if(minDistance > 0.5):
+            # neat threshold for true positives, manually verified.
+            continue
         if matches[bestMatchIndex]:
-            return bestMatchIndex
-    return -1
+            return bestMatchIndex,minDistance
+    return -1,-1
 def main(args):
     if(len(args)<4):
         print('Usage: python3 main.py photosDir knownFacesDir outFacesDir')
@@ -58,10 +62,11 @@ def main(args):
         path = os.path.join(photosDir,photoName)
         photo = cv2.imread(path)
         # detectedFaces = detectFaces(photo)
-        knownFaceIndex = getKnownFaceIndex(knownFaceEncodings,photo)
+        knownFaceIndex,distance = getKnownFaceIndex(knownFaceEncodings,photo)
         if(-1!=knownFaceIndex):
             os.rename(path,os.path.join(outFacesDir,photoName))
-            print('Found '+knownFaceNames[knownFaceIndex]+' in '+photoName)
+            print('Found '+knownFaceNames[knownFaceIndex]+\
+                  ' ('+str(distance)+') in '+photoName)
         else:
             print('No known face in '+photoName)
             pass
